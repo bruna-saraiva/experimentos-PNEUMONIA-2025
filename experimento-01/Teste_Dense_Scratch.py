@@ -143,7 +143,7 @@ batch_size = 8 #batch_size para o treino
 batch_size_val = 1
 attention_module = 'Squeeze and Excitation'
 #define as épocas
-epochs = 1
+epochs = 20
 
 # class_weight = {0: 1.48, 1: 4.14, 2:11.49}
 # class_weight = {0: 1, 1: 1, 2:1}
@@ -552,7 +552,6 @@ def transition(inputs, num_filters , compression_factor , dropout_rate ):
 def dense_block( inputs, num_layers, num_filters, growth_rate , dropout_rate,block_idx ):
     for i in range(num_layers): # num_layers is the value of 'l'
         conv_outputs = H(inputs, num_filters , dropout_rate )
-        # conv_outputs = se_block(conv_outputs, ratio=8, name=f"se_block{block_idx}_layer{i}")
         inputs = layers.Concatenate()([conv_outputs, inputs])
         num_filters += growth_rate # To increase the number of filters for each layer.
     return inputs, num_filters
@@ -565,16 +564,7 @@ def get_model(input_shape,
            compress_factor,
            num_filters,
            num_classes):
-    '''
-    input_shape = ( 32 , 32 , 3 )
-    num_blocks = 3
-    num_layers_per_block = 4
-    growth_rate = 16
-    dropout_rate = 0.4
-    compress_factor = 0.5
-
-    num_filters = 16
-    '''
+    
 
     inputs = layers.Input( shape=input_shape )
     x = layers.Conv2D( num_filters , kernel_size=( 3 , 3 ) , padding="same", use_bias=False, kernel_initializer='he_normal')( inputs )
