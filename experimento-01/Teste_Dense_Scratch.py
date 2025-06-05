@@ -158,12 +158,22 @@ num_classes_exp = 3
 
 
 space = {
-    'num_blocks': hp.choice('num_blocks', [3]),
-    'num_layers_per_block' : hp.choice('num_layers_per_block', [2]),
-    'growth_rate': hp.choice('growth_rate', [32]),
+    'num_blocks': hp.choice('num_blocks', [2,3,4]), #3
+    'num_layers_per_block' : hp.choice('num_layers_per_block', [2,3,4]), #2
+    'growth_rate': hp.choice('growth_rate', [8,16,32]), #32
     'dropout_rate' : hp.uniform('dropout_rate', 0.2, 0.35),
-    'compress_factor' : hp.choice('compress_factor', [0.5]),
-    'num_filters' : hp.choice('num_filters', [64])
+    'compress_factor' : hp.choice('compress_factor', [0.5, 1]), #0.5
+    'num_filters' : hp.choice('num_filters', [32,64]), #64
+    'se_config': hp.choice('se_config', [
+        'nenhum',
+        'apenas_topo',
+        'apenas_transicao',
+        'apenas_H',
+        'transicao_e_H',
+        'transicao_e_topo',
+        'H_e_topo',
+        'todas'])
+
 }
 
 
@@ -508,7 +518,7 @@ def H( inputs, num_filters , dropout_rate ):
     x = layers.Dropout(rate=dropout_rate )(x)
     return x
 '''
-def H( inputs, num_filters , dropout_rate ):
+def H( inputs, num_filters , dropout_rate,use_se): #adicionando use_se por causa do opt
     x = layers.BatchNormalization( epsilon=eps )( inputs )
     x = layers.Activation('relu')(x)
 
@@ -528,30 +538,34 @@ def H( inputs, num_filters , dropout_rate ):
                 
     
     x = layers.concatenate(out_conv, axis = -1)
-    # Adicionando o SE
-    x = se_block(x, ratio=8, name=None)
+    # Adicionando o SE condicionalmente
+    if use_se:
+        x = se_block(x, ratio=8, name=None)
+
     x = layers.Dropout(rate=dropout_rate )(x)
     return x
 
-def transition(inputs, num_filters , compression_factor , dropout_rate ):
+def transition(inputs, num_filters , compression_factor , dropout_rate, use_se):
     # compression_factor is the 'θ'
     x = layers.BatchNormalization( epsilon=eps )(inputs)
     x = layers.Activation('relu')(x)
     num_feature_maps = inputs.shape[1] # The value of 'm'
 
     x = layers.Conv2D(int(np.floor(num_feature_maps * compression_factor)) ,
-                               kernel_size=(1, 1), use_bias=False, padding='same' , kernel_initializer='he_normal')(x)
+                        kernel_size=(1, 1), use_bias=False, padding='same' ,
+                        kernel_initializer='he_normal')(x)
     x = layers.Dropout(rate=dropout_rate)(x)
 
-    # adicionando atencao SE depois da convolucao e antes do pooling
-    x = se_block(x, ratio=8, name=None)
+    # adicionando atencao SE condicionalmente
+    if use_se:
+        x = se_block(x, ratio=8, name=None)
 
     x = layers.AveragePooling2D(pool_size=(2, 2))(x)
     return x
 
-def dense_block( inputs, num_layers, num_filters, growth_rate , dropout_rate,block_idx ):
+def dense_block( inputs, num_layers, num_filters, growth_rate , dropout_rate,block_idx,use_se_in_H ):
     for i in range(num_layers): # num_layers is the value of 'l'
-        conv_outputs = H(inputs, num_filters , dropout_rate )
+        conv_outputs = H(inputs, num_filters , dropout_rate,use_se=use_se_in_H ) # por causa do use_s em H
         inputs = layers.Concatenate()([conv_outputs, inputs])
         num_filters += growth_rate # To increase the number of filters for each layer.
     return inputs, num_filters
@@ -563,17 +577,24 @@ def get_model(input_shape,
            dropout_rate,
            compress_factor,
            num_filters,
-           num_classes):
+           num_classes,
+           se_config): # passamos se_config para definir ele
     
+    # Determinar onde colocar os Se_blocks baseado na combinação do opt
+    use_se_in_H = se_config in ['apenas_H','transicao_e_H','H_e_topo', 'todas']
+    use_se_in_transition = se_config in ['apenas_transicao', 'transicao_e_H', 'transicao_e_topo', 'todas']
+    use_se_in_final = se_config in ['apenas_topo','transicao_e_topo','H_e_topo','todas']
 
     inputs = layers.Input( shape=input_shape )
     x = layers.Conv2D( num_filters , kernel_size=( 3 , 3 ) , padding="same", use_bias=False, kernel_initializer='he_normal')( inputs )
     for i in range( num_blocks ):
-        x, num_filters = dense_block(x, num_layers_per_block , num_filters, growth_rate , dropout_rate,block_idx=i)
-        x = transition(x, num_filters , compress_factor , dropout_rate )
+        x, num_filters = dense_block(x, num_layers_per_block , num_filters, growth_rate , dropout_rate,block_idx=i,use_se_in_H=use_se_in_H)
+        x = transition(x, num_filters , compress_factor , dropout_rate,use_se=use_se_in_transition)
         
     # x = cbam_block(x, ratio=8, name="cbam_final")
-    x = se_block(x,ratio=8, name="se_final")
+    # x = se_block(x,ratio=8, name="se_final")
+    if use_se_in_final:
+        x = se_block(x, ratio=8,name="se_final")
     x = layers.GlobalAveragePooling2D()( x )
     x = layers.Dense(256, activation='relu')(x)
     x = layers.Dense( num_classes )( x )
@@ -609,7 +630,8 @@ def build_and_train(hype_space):
             dropout_rate = hype_space['dropout_rate'],
             compress_factor = hype_space['compress_factor'],
             num_filters = hype_space['num_filters'],
-            num_classes = num_classes_exp)
+            num_classes = num_classes_exp,
+            se_config=hype_space['se_config'])
 # ----------------------------------------------------------------------------
     model_size = keras_model_memory_usage_in_bytes(model = model_final,
                        batch_size = batch_size)
@@ -701,7 +723,7 @@ def build_and_train(hype_space):
         'loss': 1-acc,
         'acurracy': acc,
         'report': class_report,
-        'attention_module': attention_module,
+        'attention_module': hype_space['se_config'],
         'confusion_matrix': cm.tolist(), #salvando a cm no json
         # 'acurracy_p_1': acc_p_1,
         # 'report_p_1': class_report_p_1,
