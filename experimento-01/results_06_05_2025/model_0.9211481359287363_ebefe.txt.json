@@ -1,0 +1,70 @@
+{
+    "acurracy": 0.9211481359287363,
+    "attention_module": "nenhum",
+    "batch_teste": 1,
+    "batch_treino": 8,
+    "confusion_matrix": [
+        [
+            1831,
+            125,
+            75
+        ],
+        [
+            18,
+            681,
+            20
+        ],
+        [
+            0,
+            1,
+            280
+        ]
+    ],
+    "data_execucao": "2025-06-06 14:33:54",
+    "epoch": 20,
+    "loss": 0.07885186407126366,
+    "model_name": "model_0.9211481359287363_ebefe",
+    "report": {
+        "0": {
+            "f1-score": 0.9438144329896907,
+            "precision": 0.9902650081124933,
+            "recall": 0.9015263417035942,
+            "support": 2031.0
+        },
+        "1": {
+            "f1-score": 0.8925294888597641,
+            "precision": 0.8438661710037175,
+            "recall": 0.9471488178025035,
+            "support": 719.0
+        },
+        "2": {
+            "f1-score": 0.8536585365853658,
+            "precision": 0.7466666666666667,
+            "recall": 0.99644128113879,
+            "support": 281.0
+        },
+        "accuracy": 0.9211481359287363,
+        "macro avg": {
+            "f1-score": 0.8966674861449402,
+            "precision": 0.8602659485942925,
+            "recall": 0.9483721468816292,
+            "support": 3031.0
+        },
+        "weighted avg": {
+            "f1-score": 0.9232906184997428,
+            "precision": 0.9329532635306764,
+            "recall": 0.9211481359287363,
+            "support": 3031.0
+        }
+    },
+    "space": {
+        "compress_factor": 1,
+        "dropout_rate": 0.2194883797912633,
+        "growth_rate": 16,
+        "num_blocks": 3,
+        "num_filters": 32,
+        "num_layers_per_block": 2,
+        "se_config": "nenhum"
+    },
+    "status": "ok"
+}
