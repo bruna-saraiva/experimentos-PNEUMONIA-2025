@@ -1,19 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[1]:
-
-
-# !cp /content/drive/MyDrive/vandecia/denseGroupTPE/database.zip .
-
-
-# In[2]:
-
-
-# !unzip database.zip
-
-
-# In[3]:
 
 
 # !pip install hyperopt
@@ -23,20 +7,6 @@
 # !pip install visualkeras
 # !pip install wandb
 
-
-# In[4]:
-
-
-# !pip install seaborn
-
-
-# In[5]:
-
-
-# get_ipython().system('mkdir results')
-
-
-# In[ ]:
 
 
 import numpy as np
@@ -87,8 +57,65 @@ from wandb.integration.keras import WandbCallback  # Esta é a importação corr
 from sklearn.metrics import confusion_matrix
 
 import seaborn as sns
+import time
+
+# configurando memory growth
+gpus = tf.config.list_physical_devices('GPU')
+if gpus:
+    try:
+        for gpu in gpus:
+            tf.config.experimental.set_memory_growth(gpu, True)
+    except RuntimeError as e:
+        print(e)
+
+# Limita otimizações XLA
+os.environ['TF_XLA_FLAGS'] = '--tf_xla_auto_jit=2'  
 
 
+def plot_training_history(history, hype_space, model_name=None):
+    """Plota gráficos de acurácia e loss do treinamento."""
+    plt.figure(figsize=(12, 5))
+    
+    # Gráfico de Acurácia
+    plt.subplot(1, 2, 1)
+    plt.plot(history.history['accuracy'], label='Treino')
+    plt.plot(history.history['val_accuracy'], label='Validação')
+    plt.title('Acurácia por Época')
+    plt.ylabel('Acurácia')
+    plt.xlabel('Época')
+    plt.legend()
+    
+    # Gráfico de Loss
+    plt.subplot(1, 2, 2)
+    plt.plot(history.history['loss'], label='Treino')
+    plt.plot(history.history['val_loss'], label='Validação')
+    plt.title('Loss por Época')
+    plt.ylabel('Loss')
+    plt.xlabel('Época')
+    plt.legend()
+    
+    # Adicionar informações do trial ao gráfico
+    params_str = "\n".join([f"{k}: {v}" for k, v in hype_space.items()])
+    plt.suptitle(f"Parâmetros do Trial:\n{params_str}", y=1.05)
+    
+    # Ajustar layout e salvar
+    plt.tight_layout()
+    
+    # Criar nome do arquivo baseado no model_name ou gerar um UUID
+    if model_name:
+        # Extrai apenas a parte do ID do modelo (remove o prefixo "model_")
+        model_id = model_name.split('_')[-1]
+        plot_filename = f"training_plot_{model_id}.png"
+    else:
+        plot_filename = f"training_plot_{str(uuid.uuid4())[:8]}.png"
+    
+    plot_path = os.path.join(RESULTS_DIR, plot_filename)
+    
+    plt.savefig(plot_path, bbox_inches='tight', dpi=300)
+    plt.close()
+    
+    print(f"Gráfico de treinamento salvo em: {plot_path}")
+    return plot_path  # Retorna o caminho para possível uso posterior
 
 # In[ ]:
 
@@ -158,9 +185,9 @@ num_classes_exp = 3
 
 
 space = {
-    'num_blocks': hp.choice('num_blocks', [2,3,4]), #3
-    'num_layers_per_block' : hp.choice('num_layers_per_block', [2,3,4]), #2
-    'growth_rate': hp.choice('growth_rate', [8,16,32]), #32
+    'num_blocks': hp.choice('num_blocks', [2,3]), #3
+    'num_layers_per_block' : hp.choice('num_layers_per_block', [2,3]), #2
+    'growth_rate': hp.choice('growth_rate', [16,32]), #32
     'dropout_rate' : hp.uniform('dropout_rate', 0.2, 0.35),
     'compress_factor' : hp.choice('compress_factor', [0.5, 1]), #0.5
     'num_filters' : hp.choice('num_filters', [32,64]), #64
@@ -509,15 +536,7 @@ from sklearn import metrics
 from keras import metrics
 
 eps = 1.1e-5
-'''
-def H( inputs, num_filters , dropout_rate ):
-    x = layers.BatchNormalization( epsilon=eps )( inputs )
-    x = layers.Activation('relu')(x)
-    x = layers.ZeroPadding2D((1, 1))(x)
-    x = layers.SeparableConv2D(num_filters, kernel_size=(3, 3), use_bias=False , kernel_initializer='he_normal' )(x)
-    x = layers.Dropout(rate=dropout_rate )(x)
-    return x
-'''
+
 def H( inputs, num_filters , dropout_rate,use_se): #adicionando use_se por causa do opt
     x = layers.BatchNormalization( epsilon=eps )( inputs )
     x = layers.Activation('relu')(x)
@@ -638,7 +657,7 @@ def build_and_train(hype_space):
     model_size = model_size/1000000000
 
     #print("Model size: " + str(model_size) )
-    if (model_size > 13):
+    if (model_size > 12.5):
         model_name = "model_" + str(uuid.uuid4())[:5]
         result = {
             'space': hype_space,
@@ -670,7 +689,8 @@ def build_and_train(hype_space):
     
     # Troquei wandbcallback() pelo metricsLogger e modelcheckpoint
     # Treino
-    model_final.fit(train_gen,
+    start_time = time.time()
+    history = model_final.fit(train_gen,
                     epochs=epochs,
                     # steps_per_epoch=int(train_samples/batch_size),
                     validation_data=val_gen,
@@ -695,6 +715,8 @@ def build_and_train(hype_space):
     # class_report_p_1 = classification_report(test_gen.classes, y_pred, output_dict=True)#, target_names=target_names)
 
     # del model_pesos
+
+    training_time = time.time() - start_time
     
     # gerando matriz de confusao
     cm = confusion_matrix(test_gen.classes,y_pred)
@@ -716,7 +738,21 @@ def build_and_train(hype_space):
     plt.savefig(cm_filename)
     plt.close()
 
+    plot_training_history(history, hype_space, model_name)
+
+    history_data = {
+    'accuracy': history.history['accuracy'],
+    'val_accuracy': history.history['val_accuracy'],
+    'loss': history.history['loss'],
+    'val_loss': history.history['val_loss']
+}
+    time_data = {
+        'total_time_seconds': training_time,
+        'time_per_epoch_seconds': training_time/epochs
+    }
+
     result = {
+        'history': history_data,
         'epoch': epochs,
         'batch_treino' : batch_size,
         'batch_teste' : batch_size_val,
@@ -730,7 +766,9 @@ def build_and_train(hype_space):
         'model_name': model_name,
         'space': hype_space,
         'status': STATUS_OK,
-        'data_execucao': datetime.now().strftime('%Y-%m-%d %H:%M:%S')  # Formato: Ano-Mês-Dia Hora:Minuto:Segundo
+        'data_execucao': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),  # Formato: Ano-Mês-Dia Hora:Minuto:Segundo
+        'time_data': time_data
+        
     }
 
     # # logando as metricas do wandb
