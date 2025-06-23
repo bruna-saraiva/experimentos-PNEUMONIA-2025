@@ -38,7 +38,10 @@ space = {
         'transicao_e_H',
         'transicao_e_topo',
         'H_e_topo',
-        'todas'])
+        'todas']),
+    # para os modelos transfer learning
+    'base_model': hp.choice('base_model', ['efficientnet', 'resnet', 'vgg']),
+    'freeze_layers': hp.choice('freeze_layers', [True, False]),  # Fine-tuning (False) ou Feature Extraction (True)
 }
 
 # configurando memory growth

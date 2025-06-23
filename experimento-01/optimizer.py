@@ -1,4 +1,4 @@
-from customized_model import *
+from build_and_train import *
 
 import json
 from bson import json_util
