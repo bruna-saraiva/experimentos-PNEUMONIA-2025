@@ -48,6 +48,7 @@ test_gen = validgen.flow_from_directory(
     class_mode="categorical",
     shuffle=False)
 
+
 # Calcule os pesos automaticamente a partir dos dados
 
 class_weights = compute_class_weight('balanced', classes=np.unique(train_gen.classes), y=train_gen.classes)

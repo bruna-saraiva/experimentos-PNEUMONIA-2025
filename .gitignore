@@ -4,3 +4,13 @@ experimento-01/modelos
 results.pkl
 nohup.out
 experimento-01/results_04_05_2025
+experimento-02/*
+experimento-03/*
+acompanhamento.txt
+results_04_05_2025
+results_03_07_DB_02
+results_06_05_2025
+results_16_06_2025
+results_18_06_2025
+results_18_06_transfer_learning
+experimento-01/__pycache__

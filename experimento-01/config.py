@@ -4,8 +4,10 @@ from hyperopt import STATUS_OK, STATUS_FAIL
 import os
 import tensorflow as tf
 
+# Dataset 1
 img_width = 180
-img_height =  180
+img_height = 180
+
 batch_size = 8 #batch_size para o treino
 
 batch_size_val = 1
@@ -13,13 +15,27 @@ attention_module = 'Squeeze and Excitation'
 epochs = 20
 
 RESULTS_DIR = "results/" #pasta para salvar os resultados dos treinamentos
+# Cria a pasta de resultados automaticamente se não existir
+if not os.path.exists(RESULTS_DIR):
+    os.makedirs(RESULTS_DIR)
 
-train_data_dir = "database/split1/train"
-validation_data_dir = "database/split1/val"
-test_data_dir = "database/split1/test"
+# Dataset 1
+# train_data_dir = "database/split1/train"
+# validation_data_dir = "database/split1/val"
+# test_data_dir = "database/split1/test"
+
+
+# # Dataset 2
+# train_data_dir = "/home/bruna/experimentos-PNEUMONIA-2025/experimento-02/chest_pneumonia_com_val/train"
+# validation_data_dir = "/home/bruna/experimentos-PNEUMONIA-2025/experimento-02/chest_pneumonia_com_val/val"
+# test_data_dir = "/home/bruna/experimentos-PNEUMONIA-2025/experimento-02/chest_pneumonia_com_val/test"
+
+# Dataset 3
+train_data_dir = "/home/bruna/experimentos-PNEUMONIA-2025/experimento-03/covidX/train"
+validation_data_dir = "/home/bruna/experimentos-PNEUMONIA-2025/experimento-03/covidX/val"
+test_data_dir = "/home/bruna/experimentos-PNEUMONIA-2025/experimento-03/covidX/test"
 
 num_classes_exp = 3
-
 eps = 1.1e-5
 
 
@@ -39,9 +55,9 @@ space = {
         'transicao_e_topo',
         'H_e_topo',
         'todas']),
-    # para os modelos transfer learning
-    'base_model': hp.choice('base_model', ['efficientnet', 'resnet', 'vgg']),
-    'freeze_layers': hp.choice('freeze_layers', [True, False]),  # Fine-tuning (False) ou Feature Extraction (True)
+    # # para os modelos transfer learning
+    # 'base_model': hp.choice('base_model', ['efficientnet', 'resnet', 'vgg']),
+    # 'freeze_layers': hp.choice('freeze_layers', [True, False]),  # Fine-tuning (False) ou Feature Extraction (True)
 }
 
 # configurando memory growth

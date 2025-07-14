@@ -10,25 +10,27 @@ import matplotlib.pyplot as plt
 
 def build_and_train(hype_space):
     print (hype_space)
+
+# Para usar o customizado é só comentar o transfer learning e descomentar o customizado
 # Modelo customizado 
-    # model_final = get_model(input_shape=(img_width, img_height, 1), # rgb: 3 ; grayscale: 1
-    #         num_blocks = int(hype_space['num_blocks']),
-    #         num_layers_per_block = int(hype_space['num_layers_per_block']),
-    #         growth_rate = int(hype_space['growth_rate']),
-    #         dropout_rate = hype_space['dropout_rate'],
-    #         compress_factor = hype_space['compress_factor'],
-    #         num_filters = hype_space['num_filters'],
-    #         num_classes = num_classes_exp,
-    #         se_config=hype_space['se_config'])
+    model_final = get_model(input_shape=(img_width, img_height, 1), # rgb: 3 ; grayscale: 1
+            num_blocks = int(hype_space['num_blocks']),
+            num_layers_per_block = int(hype_space['num_layers_per_block']),
+            growth_rate = int(hype_space['growth_rate']),
+            dropout_rate = hype_space['dropout_rate'],
+            compress_factor = hype_space['compress_factor'],
+            num_filters = hype_space['num_filters'],
+            num_classes = num_classes_exp,
+            se_config=hype_space['se_config'])
     
-# Modelo Transfer Learning 
-    model_final = get_transfer_learning_model(
-                base_model_name=hype_space['base_model'],
-                input_shape=(img_width, img_height, 1),
-                num_classes=num_classes_exp,
-                dropout_rate=hype_space['dropout_rate'],
-                freeze_layers=hype_space['freeze_layers']
-            )
+# # Modelo Transfer Learning 
+#     model_final = get_transfer_learning_model(
+#                 base_model_name=hype_space['base_model'],
+#                 input_shape=(img_width, img_height, 1),
+#                 num_classes=num_classes_exp,
+#                 dropout_rate=hype_space['dropout_rate'],
+#                 freeze_layers=hype_space['freeze_layers']
+#             )
 
 # ----------------------------------------------------------------------------
     model_size = keras_model_memory_usage_in_bytes(model = model_final,
