@@ -26,14 +26,14 @@ if not os.path.exists(RESULTS_DIR):
 
 
 # # Dataset 2
-# train_data_dir = "/home/bruna/experimentos-PNEUMONIA-2025/experimento-02/chest_pneumonia_com_val/train"
-# validation_data_dir = "/home/bruna/experimentos-PNEUMONIA-2025/experimento-02/chest_pneumonia_com_val/val"
-# test_data_dir = "/home/bruna/experimentos-PNEUMONIA-2025/experimento-02/chest_pneumonia_com_val/test"
+train_data_dir = "/home/bruna/experimentos-PNEUMONIA-2025/experimento-02/chest_pneumonia_com_val/train"
+validation_data_dir = "/home/bruna/experimentos-PNEUMONIA-2025/experimento-02/chest_pneumonia_com_val/val"
+test_data_dir = "/home/bruna/experimentos-PNEUMONIA-2025/experimento-02/chest_pneumonia_com_val/test"
 
 # Dataset 3
-train_data_dir = "/home/bruna/experimentos-PNEUMONIA-2025/experimento-03/covidX/train"
-validation_data_dir = "/home/bruna/experimentos-PNEUMONIA-2025/experimento-03/covidX/val"
-test_data_dir = "/home/bruna/experimentos-PNEUMONIA-2025/experimento-03/covidX/test"
+# train_data_dir = "/home/bruna/experimentos-PNEUMONIA-2025/experimento-03/covidX/train"
+# validation_data_dir = "/home/bruna/experimentos-PNEUMONIA-2025/experimento-03/covidX/val"
+# test_data_dir = "/home/bruna/experimentos-PNEUMONIA-2025/experimento-03/covidX/test"
 
 num_classes_exp = 3
 eps = 1.1e-5
