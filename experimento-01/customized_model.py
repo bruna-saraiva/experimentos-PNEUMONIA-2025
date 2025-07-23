@@ -195,11 +195,19 @@ def get_model(input_shape,
 
     model = Model( inputs , outputs )
     
-    model.compile( loss='categorical_crossentropy' ,optimizer=Adam(learning_rate=0.001),
-                    metrics=[ 'accuracy',
-                              metrics.Recall(thresholds=0.5, class_id=0,name='r_normal'),
-                              metrics.Recall(thresholds=0.5, class_id=1,name='r_covid'),
-                              metrics.Recall(thresholds=0.5, class_id=2,name='r_viral')])
+    #model.compile( loss='categorical_crossentropy' ,optimizer=Adam(learning_rate=0.001),
+    #                metrics=[ 'accuracy',
+    #                          metrics.Recall(thresholds=0.5, class_id=0,name='r_normal'),
+    #                          metrics.Recall(thresholds=0.5, class_id=1,name='r_covid'),
+    #                          metrics.Recall(thresholds=0.5, class_id=2,name='r_viral')])
+    metrics_list = ['accuracy']
+    for i in range(num_classes_exp):
+      metrics_list.append(metrics.Recall(thresholds=0.5, class_id=i, name=f'r_class_{i}'))
+
+    model.compile(loss='categorical_crossentropy',
+              optimizer=Adam(learning_rate=0.001),
+              metrics=metrics_list)
+
     return model
 
 
