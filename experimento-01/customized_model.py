@@ -1,5 +1,5 @@
 
-from data import *
+# from data import *
 from visualization import *
 # import numpy as np
 # import os
