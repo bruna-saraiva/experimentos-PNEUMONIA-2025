@@ -1,0 +1,60 @@
+{
+    "split_number": 5,
+    "num_classes": 2,
+    "class_names": [
+        "0",
+        "1"
+    ],
+    "hyperparameters": {
+        "num_blocks": 3,
+        "num_layers_per_block": 2,
+        "growth_rate": 16,
+        "dropout_rate": 0.25,
+        "compress_factor": 0.5,
+        "num_filters": 64,
+        "se_config": "apenas_H"
+    },
+    "accuracy": 0.69,
+    "classification_report": {
+        "0": {
+            "precision": 0.8428571428571429,
+            "recall": 0.6455142231947484,
+            "f1-score": 0.7311028500619579,
+            "support": 457.0
+        },
+        "1": {
+            "precision": 0.5371428571428571,
+            "recall": 0.7736625514403292,
+            "f1-score": 0.6340640809443507,
+            "support": 243.0
+        },
+        "accuracy": 0.69,
+        "macro avg": {
+            "precision": 0.69,
+            "recall": 0.7095883873175388,
+            "f1-score": 0.6825834655031543,
+            "support": 700.0
+        },
+        "weighted avg": {
+            "precision": 0.7367306122448979,
+            "recall": 0.69,
+            "f1-score": 0.6974165344968456,
+            "support": 700.0
+        }
+    },
+    "confusion_matrix": [
+        [
+            295,
+            162
+        ],
+        [
+            55,
+            188
+        ]
+    ],
+    "training_time_seconds": 991.120845079422,
+    "epochs_trained": 12,
+    "data_execucao": "2025-08-19 21:02:22",
+    "model_path": "holdout_results/split_5/final_model.keras",
+    "confusion_matrix_path": "holdout_results/split_5/confusion_matrix.png"
+}

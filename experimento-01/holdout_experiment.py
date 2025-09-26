@@ -11,8 +11,8 @@ import time
 
 # Configurações do experimento
 RESULTS_DIR = "holdout_results/"
-NUM_SPLITS = 1
-EPOCHS = 20
+NUM_SPLITS = 5
+EPOCHS = 50
 IMG_WIDTH = 180
 IMG_HEIGHT = 180
 BATCH_SIZE = 8
@@ -28,9 +28,9 @@ HYPERSPACE = {
     'num_blocks': 3,
     'num_layers_per_block': 2,
     'growth_rate': 16,
-    'dropout_rate': 0.25,
+    'dropout_rate': 0.26,
     'compress_factor': 0.5,
-    'num_filters': 64,
+    'num_filters': 32,
     'se_config': 'apenas_H'
 }
 
@@ -77,7 +77,7 @@ def run_holdout_experiment():
         print(f"{'='*50}")
         
         # Configura os paths para o split atual - SOMENTE ESTES PATHS SERÃO USADOS
-        base_path = f"database/split{split_num}/"
+        base_path = f"/home/bruna/experimentos-PNEUMONIA-2025/experimento-01/database/split{split_num}/"
         train_data_dir = base_path + "train"
         validation_data_dir = base_path + "val"
         test_data_dir = base_path + "test"
@@ -235,7 +235,7 @@ def train_and_evaluate_split(split_num, train_dir, val_dir, test_dir, num_classe
     
     early_stopping = EarlyStopping(
         monitor='val_loss',
-        patience=7,
+        patience=15,
         verbose=1,
         mode='auto'
     )
@@ -243,7 +243,7 @@ def train_and_evaluate_split(split_num, train_dir, val_dir, test_dir, num_classe
     reduce_lr = ReduceLROnPlateau(
         monitor='val_loss',
         factor=0.1,
-        patience=3,
+        patience=5,
         verbose=1
     )
     
